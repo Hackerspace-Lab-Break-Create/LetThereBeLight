@@ -32,8 +32,19 @@ class LedWord {
 };
 
 void LedWord::setLetter (int letterIndex, char letter) {
+  char index = letter;
+  
+  switch (letter){
+    case '$':
+        index = 26;
+        break;
+        
+    case ' ':
+        index = 27;
+        break;
+  }
 
-    letters[letterIndex] = *ALPHABET[(letter-65)];
+  letters[letterIndex] = *ALPHABET[(index-65)];
 
 }
 
