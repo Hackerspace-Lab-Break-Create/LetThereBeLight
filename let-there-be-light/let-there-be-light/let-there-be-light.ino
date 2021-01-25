@@ -1,5 +1,4 @@
-//#include "LedWord.h"
-//#include "PovAlphabet8x8.h"
+#include "LedWord.h"
 
 const int WORD_LENGTH = 6;
 const int LETTER_HEIGHT = 8;
@@ -9,102 +8,11 @@ const int BUFFER_LENGTH = VIEW_SIZE * 8;
 
 float roundTripTime = .05; //// Time (Hz) for 1 cycle. 1 complete buffer push
 
+byte letterBuffer[WORD_LENGTH];
+LedWord ledWord = LedWord (letterBuffer, WORD_LENGTH, LETTER_HEIGHT, LETTER_WIDTH);
 
-byte ALPHABET[3][8]={
-  {// A
-  0b01110000,
-  0b10001000,
-  0b10001000,
-  0b11111000,
-  0b10001000,
-  0b10001000,
-  0b10001000,
-  0b00000000},
-  // Blank
-  {0,0,0,0,0,0,0,0},
-  // Full
-  {1,1,1,1,1,1,1,1}
-};
-
-class LedWord {
-
-  public:
-    byte *letters[WORD_LENGTH]; 
-    
-    LedWord() {
-      
-      for (int i = 0; i < WORD_LENGTH; i++) {
-        setLetter(i, 'A');
-      }
-    }
-
-
-    boolean* nextLine();
-    void setWord(char *word, int length);
-    void setLetter (int letterIndex, char letter);
-
-  private:
-    
-    //bitRead reads a bit starting on the LSB (right-most bit) and we want to start from the left (MSB)
-    int currentIndex = LETTER_WIDTH;
-    
-    // The letters are read as normal from left to right
-    int currentLetter = 0;
-    boolean ret[LETTER_HEIGHT];
-
-};
-
-
-
-void LedWord::setLetter (int letterIndex, char letter) {
-
-    letters[letterIndex] = ALPHABET[(letter-65)];
-
-}
-
-void LedWord::setWord (char *word, int length) {
-  int i;
-
-  for (i = 0; i < length; i++) {
-    setLetter(i, word[i]);
-  }
-
-  //for the future when there is more than 2 letters, blank out the remaining letters in the lettersBuffer
-  for (; i < WORD_LENGTH; i++) {
-    setLetter(i, ' ');
-  }
-
-}
-
-boolean* LedWord::nextLine () {
-
-  byte *letter = letters[currentLetter];
-
-  for (int i=0;i<LETTER_HEIGHT;i++){
-    ret[i] = bitRead(letter[i], currentIndex);
-  }
-
-  currentIndex--;
-
-  if (currentIndex <= 0) {
-    currentIndex = LETTER_WIDTH;
-
-    currentLetter++;
-    if (currentLetter >= WORD_LENGTH) {
-      currentLetter = 0;
-    }
-  }
-  return ret;
-}
-
-
-/////////////////////////////////
-//
-//
-//
-/////////////////////////////////
-LedWord ledWord;
 boolean toggle = true;
+boolean* values;
 
 void configureTimer () {
   cli();
@@ -134,7 +42,7 @@ ISR(TIMER1_COMPA_vect) {
   digitalWrite (13, toggle);
   toggle = !(toggle);
 
-  boolean* values = ledWord.nextLine();
+  values = ledWord.nextLine();
 
   digitalWrite (12, values[0]);
   digitalWrite (11, values[1]);
