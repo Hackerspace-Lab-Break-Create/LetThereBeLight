@@ -73,7 +73,7 @@ void setup()
   pinMode (6, OUTPUT);
   pinMode (5, OUTPUT);
 
-  char toDisplay[] = "AAAAAA";
+  char toDisplay[] = "AaAaAa";
   ledWord.setWord(toDisplay, 6);
 
 
