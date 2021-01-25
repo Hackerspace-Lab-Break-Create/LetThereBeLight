@@ -1,3 +1,6 @@
+#ifndef _POV_ALPHABET_
+#define _POV_ALPHABET_
+
 byte ALPHABET[28][8]={
   {// A
     0b01110000,
@@ -266,3 +269,4 @@ byte ALPHABET[28][8]={
     1,1,1,1,1,1,1,1
   }
 };
+#endif
