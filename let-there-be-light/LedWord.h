@@ -2,20 +2,24 @@
 #define _LED_WORD_
 
 #include "PovAlphabet8x8.h"
+
 class LedWord {
 
   public:
+
     int wordLength, letterHeight, letterWidth;
-    
-    byte *letters; 
-    
-    LedWord(byte *lettersBuffer, int wordLength, const int letterHeight, int letterWidth) {
-      letters = lettersBuffer;
+
+    byte letters[4][8];
+   
+    LedWord (int wordLength, const int letterHeight, int letterWidth) {
+
+      //letters = lettersBuffer;
+
       this->wordLength = wordLength;
       this->letterHeight = letterHeight;
       this->letterWidth = letterWidth;
       this->ret = new boolean [letterHeight];
-      
+
       for (int i = 0; i < wordLength; i++) {
         setLetter(i, 'A');
       }
@@ -26,43 +30,66 @@ class LedWord {
     void setLetter (int letterIndex, char letter);
 
   private:
-    
+
     //bitRead reads a bit starting on the LSB (right-most bit) and we want to start from the left (MSB)
     int currentIndex = letterWidth;
     // The letters are read as normal from left to right
     int currentLetter = 0;
-    boolean *ret;
+    boolean* ret;
+
 };
 
 void LedWord::setLetter (int letterIndex, char letter) {
-  char index;
+  char index = letter;
 
-  // Force uppercase
-  if (letter >=97 && letter <= 122){
-    index = letter - 32;
-  }else{
-    index = letter;
+  Serial.print("Setting letter at index: ");
+  Serial.println(letterIndex);
+  Serial.print("Setting letter: ");
+  Serial.println(letter);
+
+//  // Force uppercase
+//  if (letter >= 97 && letter <= 122) {
+//    index = letter - 32;
+//  } else {
+//    index = letter;
+//  }
+//
+//  //Check for special characters
+//  switch (letter) {
+//    case '$':
+//      index = 27;
+//      break;
+//
+//    case ' ':
+//      index = 26;
+//      break;
+//  }
+
+
+  for (int i=0;i <letterHeight; i++){
+    letters[letterIndex][i] = ALPHABET[(index - 65)][i];
   }
+  
+  Serial.println("Alphabet:");
+  Serial.println(ALPHABET[(index - 65)][0]);
+  Serial.println(ALPHABET[(index - 65)][1]);
+  Serial.println(ALPHABET[(index - 65)][2]);
+  Serial.println(ALPHABET[(index - 65)][3]);
 
-  //Check for special characters
-  switch (letter){
-    case '$':
-        index = 26;
-        break;
-        
-    case ' ':
-        index = 27;
-        break;
+Serial.println("Letter saved: ");
+
+  for(int i = 0; i <wordLength; i++){
+  Serial.print(letters[letterIndex][i]);
   }
-
-  letters[letterIndex] = *ALPHABET[(index-65)];
 
 }
 
-void LedWord::setWord (char *word, int length) {
+void LedWord::setWord (char *word, int wordlength) {
+
+
   int i;
 
-  for (i = 0; i < length; i++) {
+  for (i = 0; i < wordlength; i++) {
     setLetter(i, word[i]);
   }
 
@@ -75,9 +102,15 @@ void LedWord::setWord (char *word, int length) {
 
 boolean* LedWord::nextLine () {
 
-  byte letter = letters[currentLetter];
-  for (int i=0;i<letterHeight;i++){
-    ret[i] = bitRead(letter, currentIndex);
+  byte *letter = letters[currentLetter];
+  Serial.println("Next line: ");
+ 
+
+  for (int i = 0; i < letterHeight; i++) {
+    Serial.println (letter[i]);
+    ret[i] = bitRead(letter[i], currentIndex);
+
+
   }
 
   currentIndex--;
@@ -86,6 +119,7 @@ boolean* LedWord::nextLine () {
     currentIndex = letterWidth;
 
     currentLetter++;
+
     if (currentLetter >= wordLength) {
       currentLetter = 0;
     }
