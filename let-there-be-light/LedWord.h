@@ -5,38 +5,38 @@
 
 class LedWord {
 
-    public:
+  public:
 
     int wordLength, letterHeight, letterWidth;
     byte **letters;
     LedWord (int wordLength, const int letterHeight, int letterWidth) {
 
-        this->letters = new byte *[wordLength];
-        for (int i = 0; i < wordLength; i++) {
-            letters[i] = new byte[letterHeight];
-        }
+      this->letters = new byte *[wordLength];
+      for (int i = 0; i < wordLength; i++) {
+        letters[i] = new byte[letterHeight];
+      }
 
-        this->wordLength = wordLength;
-        this->letterHeight = letterHeight;
-        this->letterWidth = letterWidth;
-        this->ret = new bool [letterHeight];
+      this->wordLength = wordLength;
+      this->letterHeight = letterHeight;
+      this->letterWidth = letterWidth;
+      this->ret = new bool [letterHeight];
 
-        currentIndex = letterWidth-1;
+      currentIndex = letterWidth - 1;
     }
 
-    ~LedWord (){
-        for (int i=0; i< wordLength;i++){
-            delete[] letters[i];
-        }
-        delete[] letters;
-        delete[] ret;
+    ~LedWord () {
+      for (int i = 0; i < wordLength; i++) {
+        delete[] letters[i];
+      }
+      delete[] letters;
+      delete[] ret;
     }
 
     bool* nextLine();
-    void setWord(char *word, int length);
+    void setWord(String word, int length);
     void setLetter (int letterIndex, char letter);
 
-    private:
+  private:
 
     //bitRead reads a bit starting on the LSB (right-most bit) and we want to start from the left (MSB)
     int currentIndex;
@@ -48,7 +48,8 @@ class LedWord {
 
 void LedWord::setLetter (int letterIndex, char letter) {
   char index = letter;
-
+ 
+  
   // Force uppercase
   if (letter >= 97 && letter <= 122) {
     index = letter - 32;
@@ -59,21 +60,22 @@ void LedWord::setLetter (int letterIndex, char letter) {
   //Check for special characters
   switch (letter) {
     case '$':
-      index = 27 +65;
+      index = 27 + 65;
       break;
 
     case ' ':
-      index = 26 +65;
+      index = 26 + 65;
       break;
   }
 
-    for (int i=0;i <letterHeight; i++){
-        letters[letterIndex][i] = ALPHABET[(index - 65)][i];
-    }
+  for (int i = 0; i < letterHeight; i++) {
+    letters[letterIndex][i] = ALPHABET[(index - 65)][i];
+
+  }
 
 }
 
-void LedWord::setWord (char *word, int wordlength) {
+void LedWord::setWord (String word, int wordlength) {
   int i;
 
   for (i = 0; i < wordlength; i++) {
@@ -89,16 +91,18 @@ void LedWord::setWord (char *word, int wordlength) {
 
 bool* LedWord::nextLine () {
 
+
   byte *letter = letters[currentLetter];
 
   for (int i = 0; i < letterHeight; i++) {
     ret[i] = bitRead(letter[i], currentIndex);
   }
 
+
   currentIndex--;
 
   if (currentIndex < 0) {
-    currentIndex = letterWidth-1;
+    currentIndex = letterWidth - 1;
 
     currentLetter++;
 

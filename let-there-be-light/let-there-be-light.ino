@@ -1,15 +1,22 @@
 #include "LedWord.h"
+#include <LiquidCrystal.h>
 
-const int WORD_LENGTH = 4;
-const int LETTER_HEIGHT = 8;
-const int LETTER_WIDTH = 8;
-const int VIEW_SIZE = 16;
-const int BUFFER_LENGTH = VIEW_SIZE * 8;
+const int RS = 12, EN = 11, D4 = 5, D5 = 4, D6 = 3, D7 = 2;
+
+LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
+
+int wordLength = 5;
+int letterHeigth = 8;
+int letterWidth = 8;
+int viewSize = 16;
+int bufferLength = viewSize * 8;
+boolean availableSerial = false;
+String toDisplay;
 
 float roundTripTime = .01; //// Time (Hz) for 1 cycle. 1 complete buffer push
 
 //byte letterBuffer[WORD_LENGTH];
-LedWord ledWord = LedWord (WORD_LENGTH, LETTER_HEIGHT, LETTER_WIDTH);
+LedWord ledWord = LedWord (wordLength, letterHeigth, letterWidth);
 boolean toggle = true;
 boolean* values;
 
@@ -24,7 +31,7 @@ void configureTimer () {
   //OCR1A = 15624/BUFFER_LENGTH
   // = (16*10^6) / (1*1024) - 1 (must be <65536)
 
-  OCR1A = (16000000 / ((roundTripTime) * 1024) - 1) / BUFFER_LENGTH;
+  OCR1A = (16000000 / ((roundTripTime) * 1024) - 1) / bufferLength;
 
 
   TCCR1B |= (1 << WGM12);
@@ -38,48 +45,65 @@ void configureTimer () {
 
 ISR(TIMER1_COMPA_vect) {
 
+
+
   digitalWrite (13, toggle);
   toggle = !(toggle);
 
   values = ledWord.nextLine();
 
 
-  digitalWrite (12, values[0]);
-  digitalWrite (11, values[1]);
-  digitalWrite (10, values[2]);
-  digitalWrite (9, values[3]);
-  digitalWrite (8, values[4]);
-  digitalWrite (7, values[5]);
-  digitalWrite (6, values[6]);
-  digitalWrite (5, values[7]);
- 
+  digitalWrite (14, values[0]);
+  digitalWrite (15, values[1]);
+  digitalWrite (16, values[2]);
+  digitalWrite (17, values[3]);
+  digitalWrite (18, values[4]);
+  digitalWrite (19, values[5]);
+  //digitalWrite (6, values[6]);
+  //digitalWrite (5, values[7]);
+
 }
 
 void setup()
 {
-  configureTimer();
   Serial.begin(9600);
+  lcd.begin(16, 2);
+
+
+
+  configureTimer();
+
 
   // "clock" led so we can see each pulse of the time step
   pinMode (13, OUTPUT);
 
   //The actual output pin that will reflect what our array is
-  pinMode (12, OUTPUT);
-  pinMode (11, OUTPUT);
-  pinMode (10, OUTPUT);
-  pinMode (9, OUTPUT);
-  pinMode (8, OUTPUT);
-  pinMode (7, OUTPUT);
-  pinMode (6, OUTPUT);
-  pinMode (5, OUTPUT);
-
-  char toDisplay[] = "ZACD";
-  ledWord.setWord(toDisplay, 4);
-
+  pinMode (14, OUTPUT);
+  pinMode (15, OUTPUT);
+  pinMode (16, OUTPUT);
+  pinMode (17, OUTPUT);
+  pinMode (18, OUTPUT);
+  pinMode (19, OUTPUT);
+  //pinMode (6, OUTPUT);
+  // pinMode (5, OUTPUT);
 
 }
 
 void loop()
 {
+
+  if (Serial.available()) {
+
+    String c = Serial.readString();
+
+    toDisplay = c;
+    lcd.clear();
+
+
+    ledWord.setWord(toDisplay, wordLength);
+
+  }
+  lcd.setCursor(0, 0);
+  lcd.print(toDisplay);
 
 }
