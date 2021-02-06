@@ -8,7 +8,6 @@ const int BUFFER_LENGTH = VIEW_SIZE * 8;
 
 float roundTripTime = .01; //// Time (Hz) for 1 cycle. 1 complete buffer push
 
-//byte letterBuffer[WORD_LENGTH];
 LedWord ledWord = LedWord (WORD_LENGTH, LETTER_HEIGHT, LETTER_WIDTH);
 boolean toggle = true;
 boolean* values;
@@ -43,15 +42,14 @@ ISR(TIMER1_COMPA_vect) {
 
   values = ledWord.nextLine();
 
-
-  digitalWrite (12, values[0]);
-  digitalWrite (11, values[1]);
-  digitalWrite (10, values[2]);
-  digitalWrite (9, values[3]);
-  digitalWrite (8, values[4]);
+  digitalWrite (2, values[0]);
+  digitalWrite (3, values[1]);
+  digitalWrite (4, values[2]);
+  digitalWrite (5, values[3]);
+  digitalWrite (6, values[4]);
   digitalWrite (7, values[5]);
-  digitalWrite (6, values[6]);
-  digitalWrite (5, values[7]);
+  digitalWrite (8, values[6]);
+  digitalWrite (9, values[7]);
  
 }
 
@@ -61,17 +59,17 @@ void setup()
   Serial.begin(9600);
 
   // "clock" led so we can see each pulse of the time step
-  pinMode (13, OUTPUT);
+  pinMode (9, OUTPUT);
 
   //The actual output pin that will reflect what our array is
-  pinMode (12, OUTPUT);
-  pinMode (11, OUTPUT);
-  pinMode (10, OUTPUT);
-  pinMode (9, OUTPUT);
-  pinMode (8, OUTPUT);
-  pinMode (7, OUTPUT);
-  pinMode (6, OUTPUT);
+  pinMode (2, OUTPUT);
+  pinMode (3, OUTPUT);
+  pinMode (3, OUTPUT);
+  pinMode (4, OUTPUT);
   pinMode (5, OUTPUT);
+  pinMode (6, OUTPUT);
+  pinMode (7, OUTPUT);
+  pinMode (8, OUTPUT);
 
   char toDisplay[] = "ZACD";
   ledWord.setWord(toDisplay, 4);

@@ -48,28 +48,28 @@ class LedWord {
 
 void LedWord::setLetter (int letterIndex, char letter) {
   char index = letter;
-
+  
   // Force uppercase
   if (letter >= 97 && letter <= 122) {
     index = letter - 32;
   } else {
     index = letter;
   }
-
+  
   //Check for special characters
   switch (letter) {
     case '$':
       index = 27 +65;
       break;
-
+  
     case ' ':
       index = 26 +65;
       break;
   }
-
-    for (int i=0;i <letterHeight; i++){
-        letters[letterIndex][i] = ALPHABET[(index - 65)][i];
-    }
+  
+  for (int i=0;i <letterHeight; i++){
+      letters[letterIndex][i] = ALPHABET[(index - 65)][i];
+  }
 
 }
 
