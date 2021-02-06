@@ -1,7 +1,10 @@
 #include "LedWord.h"
 #include <LiquidCrystal.h>
+#include <ShiftRegister74HC595.h>
 
+ShiftRegister74HC595<1> sr (8, 10, 9);
 const int RS = 12, EN = 11, D4 = 5, D5 = 4, D6 = 3, D7 = 2;
+
 
 LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
 
@@ -10,10 +13,9 @@ int letterHeigth = 8;
 int letterWidth = 8;
 int viewSize = 16;
 int bufferLength = viewSize * 8;
-boolean availableSerial = false;
 String toDisplay;
 
-float roundTripTime = .01; //// Time (Hz) for 1 cycle. 1 complete buffer push
+float roundTripTime = 0.01; //// Time (Hz) for 1 cycle. 1 complete buffer push
 
 //byte letterBuffer[WORD_LENGTH];
 LedWord ledWord = LedWord (wordLength, letterHeigth, letterWidth);
@@ -52,22 +54,29 @@ ISR(TIMER1_COMPA_vect) {
 
   values = ledWord.nextLine();
 
-
-  digitalWrite (14, values[0]);
-  digitalWrite (15, values[1]);
-  digitalWrite (16, values[2]);
-  digitalWrite (17, values[3]);
-  digitalWrite (18, values[4]);
-  digitalWrite (19, values[5]);
-  //digitalWrite (6, values[6]);
-  //digitalWrite (5, values[7]);
+  //
+  //  digitalWrite (14, values[0]);
+  //  digitalWrite (15, values[1]);
+  //  digitalWrite (16, values[2]);
+  //  digitalWrite (17, values[3]);
+  //  digitalWrite (18, values[4]);
+  //  digitalWrite (19, values[5]);
+  //  digitalWrite (7, values[6]);
+  //  digitalWrite (8, values[7]);
+  for(int i = 0; i < 7; i++){
+  sr.set(7 - i, values[i] == 0 ? LOW : HIGH);
+  }
+ 
 
 }
+
+
 
 void setup()
 {
   Serial.begin(9600);
   lcd.begin(16, 2);
+  lcd.print("Hello Tofu");
 
 
 
@@ -84,8 +93,8 @@ void setup()
   pinMode (17, OUTPUT);
   pinMode (18, OUTPUT);
   pinMode (19, OUTPUT);
-  //pinMode (6, OUTPUT);
-  // pinMode (5, OUTPUT);
+  pinMode (7, OUTPUT);
+  pinMode (8, OUTPUT);
 
 }
 
@@ -100,10 +109,12 @@ void loop()
     lcd.clear();
 
 
-    ledWord.setWord(toDisplay, wordLength);
+    ledWord.setWord(toDisplay, toDisplay.length());
 
   }
+
   lcd.setCursor(0, 0);
   lcd.print(toDisplay);
+
 
 }

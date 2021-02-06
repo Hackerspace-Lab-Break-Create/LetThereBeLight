@@ -9,23 +9,24 @@ class LedWord {
 
     int wordLength, letterHeight, letterWidth;
     byte **letters;
+    int i;
     LedWord (int wordLength, const int letterHeight, int letterWidth) {
 
-      this->letters = new byte *[wordLength];
-      for (int i = 0; i < wordLength; i++) {
+      this->letters = new byte *[50];
+      for (int i = 0; i < 50; i++) {
         letters[i] = new byte[letterHeight];
       }
 
       this->wordLength = wordLength;
       this->letterHeight = letterHeight;
       this->letterWidth = letterWidth;
-      this->ret = new bool [letterHeight];
+      this->ret = new bool[letterHeight];
 
       currentIndex = letterWidth - 1;
     }
 
     ~LedWord () {
-      for (int i = 0; i < wordLength; i++) {
+      for (int i = 0; i < 50; i++) {
         delete[] letters[i];
       }
       delete[] letters;
@@ -48,8 +49,8 @@ class LedWord {
 
 void LedWord::setLetter (int letterIndex, char letter) {
   char index = letter;
- 
-  
+
+
   // Force uppercase
   if (letter >= 97 && letter <= 122) {
     index = letter - 32;
@@ -75,15 +76,16 @@ void LedWord::setLetter (int letterIndex, char letter) {
 
 }
 
-void LedWord::setWord (String word, int wordlength) {
+void LedWord::setWord (String word, int newWordLength) {
   int i;
+  wordLength = newWordLength;
 
-  for (i = 0; i < wordlength; i++) {
+  for (i = 0; i < wordLength; i++) {
     setLetter(i, word[i]);
   }
 
   //for the future when there is more than 2 letters, blank out the remaining letters in the lettersBuffer
-  for (; i < wordLength; i++) {
+  for (; i < 50; i++) {
     setLetter(i, ' ');
   }
 
@@ -93,16 +95,23 @@ bool* LedWord::nextLine () {
 
 
   byte *letter = letters[currentLetter];
+  
+    for (int i = 0; i < letterHeight; i++) {
+      ret[i] = bitRead(letter[i], currentIndex);
+    }
+  
+  
+    currentIndex--;
+  
+    if (currentIndex < 0) {
+      currentIndex = letterWidth - 1;
 
-  for (int i = 0; i < letterHeight; i++) {
-    ret[i] = bitRead(letter[i], currentIndex);
-  }
-
-
-  currentIndex--;
-
-  if (currentIndex < 0) {
-    currentIndex = letterWidth - 1;
+//  ret = letter[i];
+//
+//   i++;
+//   
+//  if (i > 7) {
+//    i = 0;
 
     currentLetter++;
 
@@ -110,6 +119,8 @@ bool* LedWord::nextLine () {
       currentLetter = 0;
     }
   }
+ 
+
   return ret;
 }
 #endif
