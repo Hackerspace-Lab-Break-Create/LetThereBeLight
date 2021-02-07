@@ -1,16 +1,13 @@
 #include "LedWord.h"
 
-const int WORD_LENGTH = 4;
-const int LETTER_HEIGHT = 8;
-const int LETTER_WIDTH = 8;
 const int VIEW_SIZE = 16;
 const int BUFFER_LENGTH = VIEW_SIZE * 8;
 
 float roundTripTime = .01; //// Time (Hz) for 1 cycle. 1 complete buffer push
 
-LedWord ledWord = LedWord (WORD_LENGTH, LETTER_HEIGHT, LETTER_WIDTH);
+LedWord ledWord;
 boolean toggle = true;
-boolean* values;
+byte values;
 
 void configureTimer () {
   cli();
@@ -40,16 +37,16 @@ ISR(TIMER1_COMPA_vect) {
   digitalWrite (13, toggle);
   toggle = !(toggle);
 
-  values = ledWord.nextLine();
+  values = ledWord.nextCol();
 
-  digitalWrite (2, values[0]);
-  digitalWrite (3, values[1]);
-  digitalWrite (4, values[2]);
-  digitalWrite (5, values[3]);
-  digitalWrite (6, values[4]);
-  digitalWrite (7, values[5]);
-  digitalWrite (8, values[6]);
-  digitalWrite (9, values[7]);
+  digitalWrite (2, bitRead(values,0));
+  digitalWrite (3, bitRead(values,1));
+  digitalWrite (4, bitRead(values,2));
+  digitalWrite (5, bitRead(values,3));
+  digitalWrite (6, bitRead(values,4));
+  digitalWrite (7, bitRead(values,5));
+  digitalWrite (8, bitRead(values,6));
+  digitalWrite (9, bitRead(values,7));
  
 }
 
@@ -71,9 +68,7 @@ void setup()
   pinMode (7, OUTPUT);
   pinMode (8, OUTPUT);
 
-  char toDisplay[] = "ZACD";
-  ledWord.setWord(toDisplay, 4);
-
+  ledWord.setWord((char*)"ZACD\0");
 
 }
 

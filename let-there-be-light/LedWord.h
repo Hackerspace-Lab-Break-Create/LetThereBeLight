@@ -1,108 +1,96 @@
 #ifndef _LED_WORD_
 #define _LED_WORD_
-
 #include "PovAlphabet8x8.h"
+#include <Vector.h>
 
+
+const int ELEMENT_COUNT_MAX = 50;
+using namespace std;
 class LedWord {
 
-    public:
+  public:
 
-    int wordLength, letterHeight, letterWidth;
-    byte **letters;
-    LedWord (int wordLength, const int letterHeight, int letterWidth) {
+    const static int letterHeight = 8;
+    int letterWidth = 8;
 
-        this->letters = new byte *[wordLength];
-        for (int i = 0; i < wordLength; i++) {
-            letters[i] = new byte[letterHeight];
-        }
+    byte* storage_array[ELEMENT_COUNT_MAX];
+    Vector<byte*> letters;
 
-        this->wordLength = wordLength;
-        this->letterHeight = letterHeight;
-        this->letterWidth = letterWidth;
-        this->ret = new bool [letterHeight];
-
-        currentIndex = letterWidth-1;
+    LedWord () {
+      letters.setStorage(storage_array);
     }
 
-    ~LedWord (){
-        for (int i=0; i< wordLength;i++){
-            delete[] letters[i];
-        }
-        delete[] letters;
-        delete[] ret;
-    }
-
-    bool* nextLine();
-    void setWord(char *word, int length);
+    byte nextCol();
+    void setWord(char *word);
     void setLetter (int letterIndex, char letter);
+    int length () {
+      return letters.size();
+    }
 
-    private:
-
-    //bitRead reads a bit starting on the LSB (right-most bit) and we want to start from the left (MSB)
-    int currentIndex;
+  private:
+    int currentIndex = 0;
     // The letters are read as normal from left to right
     int currentLetter = 0;
-    bool* ret;
+    byte ret;
 
 };
 
 void LedWord::setLetter (int letterIndex, char letter) {
   char index = letter;
-  
+
+
   // Force uppercase
   if (letter >= 97 && letter <= 122) {
     index = letter - 32;
   } else {
     index = letter;
   }
-  
+
   //Check for special characters
   switch (letter) {
     case '$':
-      index = 27 +65;
+      index = 27 + 65;
       break;
-  
+
     case ' ':
-      index = 26 +65;
+      index = 26 + 65;
       break;
   }
-  
-  for (int i=0;i <letterHeight; i++){
-      letters[letterIndex][i] = ALPHABET[(index - 65)][i];
+
+
+  letters.push_back(ALPHABET[(index - 65)]);
+
+}
+
+void LedWord::setWord (char *newWord) {
+  letters.clear();
+  currentIndex = 0;
+  currentLetter = 0;
+  int i = 0;
+  while (*newWord != '\0') {
+    setLetter(i++, *newWord);
+    newWord++;
   }
 
 }
 
-void LedWord::setWord (char *word, int wordlength) {
-  int i;
-
-  for (i = 0; i < wordlength; i++) {
-    setLetter(i, word[i]);
-  }
-
-  //for the future when there is more than 2 letters, blank out the remaining letters in the lettersBuffer
-  for (; i < wordLength; i++) {
-    setLetter(i, ' ');
-  }
-
-}
-
-bool* LedWord::nextLine () {
+byte LedWord::nextCol () {
 
   byte *letter = letters[currentLetter];
 
   for (int i = 0; i < letterHeight; i++) {
-    ret[i] = bitRead(letter[i], currentIndex);
+    bitWrite(ret, i, bitRead(letter[currentIndex], i));
   }
+  printf ("%d ,", letter[currentIndex]);
+  printf ("%d \n", ret);
+  currentIndex++;
 
-  currentIndex--;
-
-  if (currentIndex < 0) {
-    currentIndex = letterWidth-1;
+  if (currentIndex > letterWidth - 1) {
+    currentIndex = 0;
 
     currentLetter++;
 
-    if (currentLetter >= wordLength) {
+    if (currentLetter >= letters.size()) {
       currentLetter = 0;
     }
   }
