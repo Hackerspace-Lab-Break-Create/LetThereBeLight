@@ -1,7 +1,10 @@
+#include <Vector.h>
+
+
 #ifndef _LED_WORD_
 #define _LED_WORD_
 #include "PovAlphabet8x8.h"
-#include <Vector.h>
+
 
 
 const int ELEMENT_COUNT_MAX = 50;
