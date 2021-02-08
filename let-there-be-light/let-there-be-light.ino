@@ -1,4 +1,13 @@
 #include "LedWord.h"
+#include <LiquidCrystal.h>
+#include <ShiftRegister74HC595.h>
+
+ShiftRegister74HC595<1> sr (8, 10, 9);
+const int RS = 12, EN = 11, D4 = 5, D5 = 4, D6 = 3, D7 = 2;
+
+
+LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
+
 
 const int VIEW_SIZE = 16;
 const int BUFFER_LENGTH = VIEW_SIZE * 8;
@@ -8,6 +17,7 @@ float roundTripTime = .01; //// Time (Hz) for 1 cycle. 1 complete buffer push
 LedWord ledWord;
 boolean toggle = true;
 byte values;
+String toDisplay;
 
 void configureTimer () {
   cli();
@@ -39,40 +49,46 @@ ISR(TIMER1_COMPA_vect) {
 
   values = ledWord.nextCol();
 
-  digitalWrite (2, bitRead(values,0));
-  digitalWrite (3, bitRead(values,1));
-  digitalWrite (4, bitRead(values,2));
-  digitalWrite (5, bitRead(values,3));
-  digitalWrite (6, bitRead(values,4));
-  digitalWrite (7, bitRead(values,5));
-  digitalWrite (8, bitRead(values,6));
-  digitalWrite (9, bitRead(values,7));
- 
+  for (int i = 0; i < 8; i++) {
+    sr.set(7 - i, bitRead(values, i) == 0 ? LOW : HIGH);
+  }
+
+
 }
 
 void setup()
 {
+  lcd.begin(16, 2);
+
   configureTimer();
   Serial.begin(9600);
 
   // "clock" led so we can see each pulse of the time step
-  pinMode (9, OUTPUT);
+  pinMode (13, OUTPUT);
 
-  //The actual output pin that will reflect what our array is
-  pinMode (2, OUTPUT);
-  pinMode (3, OUTPUT);
-  pinMode (3, OUTPUT);
-  pinMode (4, OUTPUT);
-  pinMode (5, OUTPUT);
-  pinMode (6, OUTPUT);
-  pinMode (7, OUTPUT);
-  pinMode (8, OUTPUT);
 
-  ledWord.setWord((char*)"ZACD\0");
 
 }
 
 void loop()
 {
+
+
+  if (Serial.available()) {
+
+    String c = Serial.readString();
+    toDisplay = c;
+    char bufferA[c.length()];
+    c.toCharArray(bufferA, c.length());
+    lcd.clear();
+
+
+    ledWord.setWord(bufferA);
+
+  }
+
+  lcd.setCursor(0, 0);
+  lcd.print(toDisplay.length());
+
 
 }

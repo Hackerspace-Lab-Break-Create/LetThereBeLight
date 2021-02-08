@@ -1,10 +1,8 @@
-#include <Vector.h>
-
 
 #ifndef _LED_WORD_
 #define _LED_WORD_
 #include "PovAlphabet8x8.h"
-
+#include <Vector.h>
 
 
 const int ELEMENT_COUNT_MAX = 50;
@@ -31,7 +29,7 @@ class LedWord {
     }
 
   private:
-    int currentIndex = 0;
+    int currentIndex = 7;
     // The letters are read as normal from left to right
     int currentLetter = 0;
     byte ret;
@@ -67,7 +65,7 @@ void LedWord::setLetter (int letterIndex, char letter) {
 
 void LedWord::setWord (char *newWord) {
   letters.clear();
-  currentIndex = 0;
+  currentIndex = 7;
   currentLetter = 0;
   int i = 0;
   while (*newWord != '\0') {
@@ -82,14 +80,13 @@ byte LedWord::nextCol () {
   byte *letter = letters[currentLetter];
 
   for (int i = 0; i < letterHeight; i++) {
-    bitWrite(ret, i, bitRead(letter[currentIndex], i));
+    bitWrite(ret, i, bitRead(letter[i], currentIndex));
   }
-  printf ("%d ,", letter[currentIndex]);
-  printf ("%d \n", ret);
-  currentIndex++;
 
-  if (currentIndex > letterWidth - 1) {
-    currentIndex = 0;
+  currentIndex--;
+
+  if (currentIndex < 0) {
+    currentIndex = 7;
 
     currentLetter++;
 
