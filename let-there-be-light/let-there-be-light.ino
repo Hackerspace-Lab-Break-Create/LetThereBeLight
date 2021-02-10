@@ -1,23 +1,19 @@
 #include "LedWord.h"
-#include <LiquidCrystal.h>
-#include <ShiftRegister74HC595.h>
-
-ShiftRegister74HC595<1> sr (8, 10, 9);
-const int RS = 12, EN = 11, D4 = 5, D5 = 4, D6 = 3, D7 = 2;
 
 
-LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
 
+float roundTripTime = 15;//1.8*4; //// Time (Hz) for 1 cycle. 1 complete buffer push + remaining space (total steps in view size)
 
-const int VIEW_SIZE = 16;
-const int BUFFER_LENGTH = VIEW_SIZE * 8;
+const int VIEW_SIZE = 8;
+const int TOTAL_STEPS = VIEW_SIZE * 8;
 
-float roundTripTime = .01; //// Time (Hz) for 1 cycle. 1 complete buffer push
+long currentStep =0;
+long wordSteps;
+
 
 LedWord ledWord;
 boolean toggle = true;
 byte values;
-String toDisplay;
 
 void configureTimer () {
   cli();
@@ -30,8 +26,8 @@ void configureTimer () {
   //OCR1A = 15624/BUFFER_LENGTH
   // = (16*10^6) / (1*1024) - 1 (must be <65536)
 
-  OCR1A = (16000000 / ((roundTripTime) * 1024) - 1) / BUFFER_LENGTH;
-
+  OCR1A = (16000000 / ((roundTripTime) * 1024) - 1) / TOTAL_STEPS;
+  //OCR1A = (16000000 / ((roundTripTime) * 1024) - 1);
 
   TCCR1B |= (1 << WGM12);
   // Set CS10 and CS12 bits for 1024 prescaler
@@ -46,49 +42,58 @@ ISR(TIMER1_COMPA_vect) {
 
   digitalWrite (13, toggle);
   toggle = !(toggle);
+  wordSteps = ledWord.length()*8;
 
-  values = ledWord.nextCol();
+  if (currentStep++ < wordSteps){
+    values = ledWord.nextCol();
 
-  for (int i = 0; i < 8; i++) {
-    sr.set(7 - i, bitRead(values, i) == 0 ? LOW : HIGH);
+    digitalWrite(2, bitRead(values,7));
+    digitalWrite(3, bitRead(values,6));
+    digitalWrite(4, bitRead(values,5));
+    digitalWrite(5, bitRead(values,4));
+    digitalWrite(6, bitRead(values,3));
+    digitalWrite(7, bitRead(values,2));
+    digitalWrite(8, bitRead(values,2));
+    digitalWrite(9, bitRead(values,0));
+  }else{
+    digitalWrite(2,0);
+    digitalWrite(3, 0);
+    digitalWrite(4, 0);
+    digitalWrite(5, 0);
+    digitalWrite(6, 0);
+    digitalWrite(7, 0);
+    digitalWrite(8, 0);
+    digitalWrite(9, 0);
   }
-
+  if (currentStep == TOTAL_STEPS){
+    currentStep = 0;
+  }
 
 }
 
 void setup()
 {
-  lcd.begin(16, 2);
 
   configureTimer();
   Serial.begin(9600);
 
   // "clock" led so we can see each pulse of the time step
   pinMode (13, OUTPUT);
+  pinMode (2, OUTPUT);
+  pinMode (3, OUTPUT);
+  pinMode (4, OUTPUT);
+  pinMode (5, OUTPUT);
+  pinMode (6, OUTPUT);
+  pinMode (7, OUTPUT);
+  pinMode (8, OUTPUT);
+  pinMode (9, OUTPUT);
 
-
+  ledWord.setWord((char*)"jojo\0");
 
 }
 
 void loop()
 {
-
-
-  if (Serial.available()) {
-
-    String c = Serial.readString();
-    toDisplay = c;
-    char bufferA[c.length()];
-    c.toCharArray(bufferA, c.length());
-    lcd.clear();
-
-
-    ledWord.setWord(bufferA);
-
-  }
-
-  lcd.setCursor(0, 0);
-  lcd.print(toDisplay.length());
 
 
 }
