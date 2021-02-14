@@ -88,7 +88,7 @@ void setup()
   pinMode (8, OUTPUT);
   pinMode (9, OUTPUT);
 
-  ledWord.setWord((char*)"jojo\0");
+  ledWord.setWord((char*)"riko\0");
 
 }
 
